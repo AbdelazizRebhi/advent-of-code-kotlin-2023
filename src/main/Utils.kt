@@ -21,3 +21,18 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
  * The cleaner shorthand for printing output.
  */
 fun Any?.println() = println(this)
+
+
+enum class Digit {
+    ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
+}
+
+fun String.matchToInt(): Int {
+    return if (length > 1) {
+        Digit.valueOf(this.uppercase()).ordinal + 1
+    } else {
+        toInt()
+    }
+}
+
+fun MatchResult.toPair(): Pair<Int, Int> = this.range.first to this.value.matchToInt()

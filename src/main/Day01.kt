@@ -2,22 +2,38 @@ package main
 
 fun main() {
     fun part1(input: List<String>): Int {
-        var sum = 0
-        val regex = """\d""".toRegex()
-        input.forEach {
-            val digits = regex
-                .findAll(it)
-                .map(MatchResult::value)
-                .toList()
+        var sum1 = 0
 
-            sum += (digits.first() + digits.last()).toInt()
+        input.forEach {
+            val digits = "\\d".toRegex().findAll(it).map(MatchResult::value).toList()
+
+            sum1 += (digits.first() + digits.last()).toInt()
         }
-        return sum
+
+        return sum1
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        var sum2 = 0
+
+        val digitRegex = buildList {
+            add("\\d")
+            addAll(Digit.entries.map { it.name.lowercase() })
+        }.map(String::toRegex)
+
+        input.forEach { line ->
+            val lineMatches = digitRegex.flatMap { regex ->
+                regex.findAll(line).map(MatchResult::toPair)
+            }.toList().sortedBy(Pair<Int, Int>::first)
+
+            sum2 += lineMatches.first().second * 10 + lineMatches.last().second
+        }
+
+        return sum2
     }
+
+
+
 
     val input = readInput(
         "Day01"
@@ -26,5 +42,7 @@ fun main() {
 
     part1(input).println()
 
-    //part2(input).println()
+    part2(input).println()
 }
+
+
