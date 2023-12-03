@@ -2,11 +2,11 @@ package main
 
 fun main() {
     fun part1(input: List<String>): Int = input.sumOf {
-        line -> findNumericDigitsInLine(line).toCalibrationValue()
+        line -> findNumericDigitsInLine(line).toCalibrationValue1()
     }
 
     fun part2(input: List<String>): Int = input.sumOf {
-        line -> findValidDigitsInLine(line).toCalibrationValue()
+        line -> findValidDigitsInLine(line).toCalibrationValue2()
     }
 
     val input = readInput(
@@ -27,7 +27,7 @@ fun findNumericDigitsInLine(line: String) = "\\d".toRegex()
     .map(String::toInt)
     .toList()
 
-fun List<Int>.toCalibrationValue() = this.first() * 10 + this.last()
+fun List<Int>.toCalibrationValue1() = this.first() * 10 + this.last()
 
 enum class WordedDigit {
     ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
@@ -52,7 +52,7 @@ fun findValidDigitsInLine(line: String) = validDigitRegex.flatMap { regex ->
     regex.findAll(line).map(MatchResult::toPair)
 }.toList().sortedBy(Pair<Int, Int>::first)
 
-fun List<Pair<Int, Int>>.toCalibrationValue() = this.first().second * 10 + this.last().second
+fun List<Pair<Int, Int>>.toCalibrationValue2() = this.first().second * 10 + this.last().second
 
 
 
