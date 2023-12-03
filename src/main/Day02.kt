@@ -6,7 +6,9 @@ fun main() {
         .filter(Game::isPossible)
         .sumOf(Game::id)
 
-    fun part2(input: List<String>): Int = input.sumOf { it.length }
+    fun part2(input: List<String>): Int = input
+        .map(String::toGame)
+        .sumOf(Game::power)
 
     val input = readInput(
         "Day02"
@@ -41,6 +43,8 @@ data class Game(val id: Int, val turns: List<Turn>) {
     fun isPossible(): Boolean {
         return (this[Color.RED] < 13) && (this[Color.GREEN] < 14) && (this[Color.BLUE] < 15)
     }
+    val power: Int
+        get() = this[Color.RED] * this[Color.GREEN] * this[Color.BLUE]
 }
 
 fun String.toGame() = Game (
