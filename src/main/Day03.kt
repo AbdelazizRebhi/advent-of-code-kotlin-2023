@@ -47,20 +47,11 @@ data class Number(val cellRange: CellRange, val value: Int)
 
 data class Symbol(val cellRange: CellRange, val value: Char)
 
-fun MatchResult.toCellRange(lineNumber: Int) = CellRange(
-    range,
-    lineNumber
-)
+fun MatchResult.toCellRange(lineNumber: Int) = CellRange(range, lineNumber)
 
-fun MatchResult.toNumber(lineNumber: Int) = Number(
-    toCellRange(lineNumber),
-    value.toInt()
-)
+fun MatchResult.toNumber(lineNumber: Int) = Number(toCellRange(lineNumber), value.toInt())
 
-fun MatchResult.toSymbol(lineNumber: Int) = Symbol(
-    toCellRange(lineNumber),
-    value.first()
-)
+fun MatchResult.toSymbol(lineNumber: Int) = Symbol(toCellRange(lineNumber), value.first())
 
 fun List<String>.findNumbers() = flatMapIndexed { lineNumber, line ->
     "\\d+".toRegex().findAll(line).map { it.toNumber(lineNumber) }
