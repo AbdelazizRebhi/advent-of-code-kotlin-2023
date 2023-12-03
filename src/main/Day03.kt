@@ -7,13 +7,13 @@ fun main() {
 //        "Day03_test"
     )
 
-    val candidateParts = findCandidateParts(input)
-    val symbolCells = findSymbols(input)
+    val candidateParts = findNumbers(input)
+    val symbols = findSymbols(input)
 
-    val realParts = findRealParts(candidateParts, symbolCells)
-    val gears = findGears(realParts, symbolCells)
+    val realParts = findRealParts(candidateParts, symbols)
+    val gears = findGears(realParts, symbols)
 
-    val part1 = realParts.sumOf { it.value.toInt() }
+    val part1 = realParts.sumOf { it.value }
     val part2 = gears.sumOf { it.ratio }
 
     part1.println()
@@ -24,7 +24,7 @@ val XY_RANGE = 1..139
 
 data class Cell(val x: Int, val y: Int)
 
-data class CellRange(val xRange: IntRange, val y: Int, val value: String) {
+data class CellRange(val xRange: IntRange, val y: Int) {
     private val adjacentXRange: IntRange
         get() = (xRange.first-1).coerceAtLeast(XY_RANGE.first()) .. (xRange.last+1).coerceAtMost(XY_RANGE.last)
 
@@ -37,46 +37,59 @@ data class CellRange(val xRange: IntRange, val y: Int, val value: String) {
     val neighbors: Set<Cell>
         get() = buildSet {
             adjacentXRange.forEach { x ->
-                adjacentYRange.forEach {y ->
+                adjacentYRange.forEach { y ->
                     add(Cell(x, y))
                 }
             }
         }
 }
 
+data class Number(val cellRange: CellRange, val value: Int)
+
+data class Symbol(val cellRange: CellRange, val value: Char)
+
 fun MatchResult.toCellRange(lineNumber: Int) = CellRange (
     range,
-    lineNumber,
-    value
+    lineNumber
 )
 
-fun List<String>.toCellRangeOf(pattern: String) = this.flatMapIndexed { lineNumber, line ->
-    pattern.toRegex().findAll(line).map { it.toCellRange(lineNumber) }
+fun MatchResult.toNumber(lineNumber: Int) = Number (
+    toCellRange(lineNumber),
+    value.toInt()
+)
+
+fun MatchResult.toSymbol(lineNumber: Int) = Symbol (
+    toCellRange(lineNumber),
+    value.first()
+)
+
+fun findNumbers(inputLines: List<String>) = inputLines.flatMapIndexed { lineNumber, line ->
+    "\\d+".toRegex().findAll(line).map { it.toNumber(lineNumber) }
 }.toSet()
 
-fun findCandidateParts(inputLines: List<String>) = inputLines.toCellRangeOf("\\d+")
+fun findSymbols(inputLines: List<String>) = inputLines.flatMapIndexed { lineNumber, line ->
+    "[^\\w.]".toRegex().findAll(line).map { it.toSymbol(lineNumber) }
+}.toSet()
 
-fun findSymbols(inputLines: List<String>) = inputLines.toCellRangeOf("[^\\w.]")
+fun Set<Number>.filterByNeighborsOf(reference: Set<Cell>) =
+    filter { it.cellRange.neighbors.intersect(reference).isNotEmpty() }.toSet()
 
-fun findRealParts(candidateParts: Set<CellRange>, symbols: Set<CellRange>): Set<CellRange> {
-    val symbolCells = symbols.flatMap { it.cells }.toSet()
-
-    return candidateParts
-        .filter { it.neighbors.intersect(symbolCells).isNotEmpty() }.toSet()
-}
+fun findRealParts(candidateParts: Set<Number>, symbols: Set<Symbol>) = candidateParts
+    .filterByNeighborsOf(symbols.flatMap { it.cellRange.cells }.toSet())
 
 data class Gear(val partPair: Pair<Int, Int>) {
     val ratio: Int
         get() = partPair.first * partPair.second
 }
 
-fun findGears(realParts: Set<CellRange>, symbols: Set<CellRange>) = buildSet {
-    val starCells = symbols.filter { it.value == "*" }.flatMap { it.cells }.toSet()
-
-    starCells.forEach { starCell ->
-        val neighborParts = realParts.filter { starCell in it.neighbors }
-        if (neighborParts.size == 2) {
-            add(Gear(neighborParts.first().value.toInt() to neighborParts.last().value.toInt()))
+fun findGears(realParts: Set<Number>, symbols: Set<Symbol>) = buildSet {
+    symbols
+        .filter { it.value == '*' }
+        .flatMap { it.cellRange.cells }
+        .forEach { starCell ->
+            val neighborParts = realParts.filter { starCell in it.cellRange.neighbors }
+            if (neighborParts.size == 2) {
+                add(Gear(neighborParts.first().value to neighborParts.last().value))
+            }
         }
-    }
 }
