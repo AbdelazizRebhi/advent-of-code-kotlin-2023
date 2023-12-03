@@ -51,8 +51,3 @@ fun String.toGame() = Game (
     substringBefore(": ").substringAfter(" ").toInt(),
     substringAfter(": ").split("; ").map(String::toTurn)
 )
-
-
-
-
-

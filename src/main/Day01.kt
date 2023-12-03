@@ -53,6 +53,3 @@ fun findValidDigitsInLine(line: String) = validDigitRegex.flatMap { regex ->
 }.toList().sortedBy(Pair<Int, Int>::first)
 
 fun List<Pair<Int, Int>>.toCalibrationValue2() = this.first().second * 10 + this.last().second
-
-
-
