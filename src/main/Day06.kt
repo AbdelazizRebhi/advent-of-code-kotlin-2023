@@ -25,8 +25,6 @@ fun main() {
     val part2 = race.getWinCount()
 
     part2.println()
-
-
 }
 
 fun Race.getWinCount(): Int {
