@@ -1,5 +1,8 @@
 package main
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
@@ -21,3 +24,8 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
  * The cleaner shorthand for printing output.
  */
 fun Any?.println() = println(this)
+
+suspend fun <A, B> Iterable<A>.parallelMap(transform: suspend (A) -> B): List<B> =
+    coroutineScope {
+        map { async { transform(it) } }.awaitAll()
+    }
