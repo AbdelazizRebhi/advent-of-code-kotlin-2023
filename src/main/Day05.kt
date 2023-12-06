@@ -9,33 +9,13 @@ fun main() {
 //        "Day05_test"
     )
 
-    val headerIndices = Category.entries.map { category ->
-        input.indexOfFirst { category.name.lowercase() in it }
-    }
-
-
-    val mappings = buildList {
-        Category.entries.sortedBy { it.ordinal }.forEach { category ->
-            val i = category.ordinal
-            val start = headerIndices[i] + 1
-            val end = if (i < 6) headerIndices[i + 1] - 1 else input.size
-            val mapLines = input.subList(start, end).map(String::toMapLine)
-            add(Mapping(category, mapLines))
-        }
-    }
+    val converters = input.toConverterList()
 
     // part 1: first line is seed numbers
     val seeds = input[0].substringAfter(": ")
         .split(Regex("\\s+")).map { it.toLong() }
 
-    val part1 = seeds.minOf { seed ->
-        var location = seed
-        mappings.forEach { mapping ->
-            mapping.mapLines.firstOrNull { location in it.sourceRange }
-                ?.let { location += it.targetRange.first - it.sourceRange.first }
-        }
-        return@minOf location
-    }
+    val part1 = seeds.minOf(converters::convertSeedToLocation)
 
     part1.println()
 
@@ -44,28 +24,17 @@ fun main() {
         .split(Regex("\\s+")).map { it.toLong() }
         .chunked(2) { (start, length) -> start until start + length }
 
-//
-//    val part2ForwardTime = measureTimeMillis {
-//        part2Forward(seedRanges, mappings).println()
-//    }
-//    println("Part 2 with the forward approach took $part2ForwardTime ms.") // around 7 min
-
-
-    val part2BackwardTime = measureTimeMillis {
-        part2Backward(seedRanges, mappings).println()
+    val part2Time = measureTimeMillis {
+        part2(seedRanges, converters.reversed()).println()
     }
-    println("Part 2 with the backward approach took $part2BackwardTime ms.") // under 400 ms
+    println("Part 2 with the backward approach took $part2Time ms.")
 
 }
 
-private fun part2Backward(seedRanges: List<LongRange>, mappings: List<Mapping>): Long {
+fun part2(seedRanges: List<LongRange>, converters: List<Converter>): Long {
     var minLocation: Long = Long.MAX_VALUE
     for (location in 1..Long.MAX_VALUE) {
-        var seed = location
-        mappings.reversed().forEach { mapping ->
-            mapping.mapLines.firstOrNull { seed in it.targetRange }
-                ?.let { seed += it.sourceRange.first - it.targetRange.first }
-        }
+        val seed = converters.convertLocationToSeed(location)
 
         if (seedRanges.any { it.contains(seed) }) {
             minLocation = location
@@ -75,29 +44,42 @@ private fun part2Backward(seedRanges: List<LongRange>, mappings: List<Mapping>):
     return minLocation
 }
 
-private fun part2Forward(seedRanges: List<LongRange>, mappings: List<Mapping>): Long {
-    var minLocation: Long = Long.MAX_VALUE
-
-    seedRanges.forEach { seedRange ->
-        seedRange.forEach { seed ->
-            var location = seed
-            mappings.forEach { mapping ->
-                mapping.mapLines.firstOrNull { location in it.sourceRange }
-                    ?.let { location += it.targetRange.first - it.sourceRange.first }
-            }
-            if (location < minLocation) {
-                minLocation = location
-            }
-        }
-    }
-
-    return minLocation
-}
-
 enum class Category { SOIL, FERTILIZER, WATER, LIGHT, TEMPERATURE, HUMIDITY, LOCATION }
 
-data class Mapping(val targetCategory: Category, val mapLines: List<MapLine>)
+data class Converter(val targetCategory: Category, val mapLines: List<MapLine>)
 
+fun List<String>.toConverterList(): List<Converter> {
+    val headerIndices = Category.entries.map { category ->
+        indexOfFirst { category.name.lowercase() in it }
+    }
+
+    return headerIndices.mapIndexed { index, headerIndex ->
+        val start = headerIndex + 1
+        val end = if (index < 6) headerIndices[index + 1] - 1 else size
+        val mapLines = subList(start, end).map(String::toMapLine)
+        Converter(Category.entries[index], mapLines)
+    }
+}
+
+fun Converter.convertValue(value: Long): Long =
+    mapLines.firstOrNull { value in it.sourceRange }
+        ?.let { value + it.targetRange.first - it.sourceRange.first }
+        ?: value
+
+fun Converter.inverseConvertValue(value: Long): Long =
+    mapLines.firstOrNull { value in it.targetRange }
+        ?.let { value + it.sourceRange.first - it.targetRange.first }
+        ?: value
+
+fun List<Converter>.convertSeedToLocation(seed: Long): Long =
+    fold(seed) { acc, converter ->
+        converter.convertValue(acc)
+    }
+
+fun List<Converter>.convertLocationToSeed(location: Long): Long =
+    fold(location) { acc, converter ->
+        converter.inverseConvertValue(acc)
+    }
 
 data class MapLine(val targetRange: LongRange, val sourceRange: LongRange)
 
