@@ -9,7 +9,7 @@ fun main() {
 //        "Day04_test"
     )
 
-    val cards = input.map { it.toCard() }
+    val cards = input.map { it.toScratchCard() }
 
     val cardCount = IntArray(input.size) { 1 }
 
@@ -24,11 +24,11 @@ fun main() {
     part2.println()
 }
 
-data class Card(val id: Int, val targetNumbers: Set<Int>, val playerNumbers: Set<Int>)
+data class ScratchCard(val id: Int, val targetNumbers: Set<Int>, val playerNumbers: Set<Int>)
 
-fun Card.getWinCount(): Int = (targetNumbers intersect playerNumbers).size
+fun ScratchCard.getWinCount(): Int = (targetNumbers intersect playerNumbers).size
 
-fun Card.getPoints(): Int = 2.0.pow(getWinCount() - 1).toInt()
+fun ScratchCard.getPoints(): Int = 2.0.pow(getWinCount() - 1).toInt()
 
 fun String.toCardId(): Int =
     substringBefore(":").split(Regex("\\s+")).last().toInt()
@@ -41,4 +41,4 @@ fun String.toPlayerNumbers(): Set<Int> =
     substringAfter("|")
         .trim().split(Regex("\\s+")).map(String::toInt).toSet()
 
-fun String.toCard() = Card(toCardId(), toTargetNumbers(), toPlayerNumbers())
+fun String.toScratchCard() = ScratchCard(toCardId(), toTargetNumbers(), toPlayerNumbers())
