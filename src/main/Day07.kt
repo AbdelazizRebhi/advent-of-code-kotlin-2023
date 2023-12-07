@@ -19,26 +19,6 @@ fun List<Hand>.getTotalWinnings(): Int = sorted()
     .mapIndexed { index, hand -> hand.bid * (index + 1) }
     .sum()
 
-fun Hand.getType(): HandType {
-    val clusters = camelCards.groupingBy { it }
-        .eachCount()
-        .toMutableMap()
-
-    // comment this for part 1
-    applyJokerRule(clusters)
-
-    val maxCount = clusters.maxOfOrNull { it.value }!!
-    val pairCount = clusters.count { it.value == 2 }
-
-    return when (maxCount) {
-        1 -> HandType.HIGH_CARD
-        2 -> if (pairCount == 2) HandType.TWO_PAIR else HandType.ONE_PAIR
-        3 -> if (pairCount == 1) HandType.FULL_HOUSE else HandType.THREE_OF_A_KIND
-        4 -> HandType.FOUR_OF_A_KIND
-        else -> HandType.FIVE_OF_A_KIND
-    }
-}
-
 private fun applyJokerRule(clusters: MutableMap<CamelCard, Int>) {
     val joker = CamelCard.entries.first()
     val jokerCount = clusters[joker] ?: 0
@@ -65,13 +45,34 @@ fun String.toHand() = Hand(
 )
 
 data class Hand(val camelCards: List<CamelCard>, val bid: Int) : Comparable<Hand> {
+
+    private val handType: HandType by lazy {
+        val clusters = camelCards.groupingBy { it }
+            .eachCount()
+            .toMutableMap()
+
+        // comment this for part 1
+        applyJokerRule(clusters)
+
+        val maxCount = clusters.maxOfOrNull { it.value }!!
+        val pairCount = clusters.count { it.value == 2 }
+
+        when (maxCount) {
+            1 -> HandType.HIGH_CARD
+            2 -> if (pairCount == 2) HandType.TWO_PAIR else HandType.ONE_PAIR
+            3 -> if (pairCount == 1) HandType.FULL_HOUSE else HandType.THREE_OF_A_KIND
+            4 -> HandType.FOUR_OF_A_KIND
+            else -> HandType.FIVE_OF_A_KIND
+        }
+    }
+
     override fun compareTo(other: Hand): Int =
-        if (this.getType() == other.getType()) {
+        if (this.handType == other.handType) {
             this.camelCards.zip(other.camelCards) { thisCard, otherCard ->
                 thisCard.value.compareTo(otherCard.value)
             }.firstOrNull { it != 0 } ?: 0
         } else {
-            other.getType().compareTo(this.getType())
+            other.handType.compareTo(this.handType)
         }
 }
 
