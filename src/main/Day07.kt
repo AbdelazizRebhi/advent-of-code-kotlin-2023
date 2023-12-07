@@ -27,20 +27,13 @@ fun Hand.getType(): HandType {
     // comment this for part 1
     applyJokerRule(clusters)
 
-    val maxCount = clusters.maxByOrNull { it.value }!!.value
+    val maxCount = clusters.maxOfOrNull { it.value }!!
+    val pairCount = clusters.count { it.value == 2 }
 
     return when (maxCount) {
         1 -> HandType.HIGH_CARD
-        2 -> if (clusters.count { it.value == 2 } > 1) {
-            HandType.TWO_PAIR
-        } else {
-            HandType.ONE_PAIR
-        }
-        3 -> if (clusters.count { it.value == 2 } == 1 ) {
-            HandType.FULL_HOUSE
-        } else {
-            HandType.THREE_OF_A_KIND
-        }
+        2 -> if (pairCount == 2) HandType.TWO_PAIR else HandType.ONE_PAIR
+        3 -> if (pairCount == 1) HandType.FULL_HOUSE else HandType.THREE_OF_A_KIND
         4 -> HandType.FOUR_OF_A_KIND
         else -> HandType.FIVE_OF_A_KIND
     }
