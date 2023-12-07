@@ -9,17 +9,25 @@ fun main() {
 
     val hands = input.map { it.toHand() }
 
-    val part1 = hands.sorted()
-        .mapIndexed { index, hand -> hand.bid * (index + 1) }
-        .sum()
+    val part12 = hands.getTotalWinnings()
 
-    part1.println()
+    part12.println()
 
 }
 
+fun List<Hand>.getTotalWinnings(): Int = sorted()
+    .mapIndexed { index, hand -> hand.bid * (index + 1) }
+    .sum()
+
 fun Hand.getType(): HandType {
-    val clusters = cards.groupingBy { it }.eachCount()
-    val maxCount = clusters.maxBy { it.value }.value
+    val clusters = camelCards.groupingBy { it }
+        .eachCount()
+        .toMutableMap()
+
+    // comment this for part 1
+    applyJokerRule(clusters)
+
+    val maxCount = clusters.maxByOrNull { it.value }!!.value
 
     return when (maxCount) {
         1 -> HandType.HIGH_CARD
@@ -38,6 +46,16 @@ fun Hand.getType(): HandType {
     }
 }
 
+private fun applyJokerRule(clusters: MutableMap<CamelCard, Int>) {
+    val joker = CamelCard.entries.first()
+    val jokerCount = clusters[joker] ?: 0
+    clusters.filterNot { it.key == joker }
+        .maxByOrNull { it.value }?.let {
+            clusters.merge(it.key, jokerCount, Int::plus)
+            clusters.remove(joker)
+        }
+}
+
 enum class HandType {
     FIVE_OF_A_KIND,
     FOUR_OF_A_KIND,
@@ -49,23 +67,23 @@ enum class HandType {
 }
 
 fun String.toHand() = Hand(
-    substringBefore(" ").map { Card.getByLabel(it)!! },
+    substringBefore(" ").map { CamelCard.getByLabel(it)!! },
     substringAfter(" ").trim().toInt()
 )
 
-data class Hand(val cards: List<Card>, val bid: Int) : Comparable<Hand> {
-    override fun compareTo(other: Hand): Int {
+data class Hand(val camelCards: List<CamelCard>, val bid: Int) : Comparable<Hand> {
+    override fun compareTo(other: Hand): Int =
         if (this.getType() == other.getType()) {
-            return this.cards.zip(other.cards) { thisCard, otherCard ->
+            this.camelCards.zip(other.camelCards) { thisCard, otherCard ->
                 thisCard.value.compareTo(otherCard.value)
-            }.firstOrNull { it != 0 }!!
+            }.firstOrNull { it != 0 } ?: 0
+        } else {
+            other.getType().compareTo(this.getType())
         }
-        return other.getType().compareTo(this.getType())
-    }
 }
 
-enum class Card(val label: Char, val value: Int) {
-    JOKER('J', 1),
+enum class CamelCard(val label: Char, val value: Int) {
+    JOKER('J', 1), // comment this for part 1
     TWO('2', 2),
     THREE('3', 3),
     FOUR('4', 4),
@@ -81,6 +99,6 @@ enum class Card(val label: Char, val value: Int) {
     ACE('A', 14);
 
     companion object {
-        fun getByLabel(label: Char) = Card.entries.firstOrNull { it.label == label }
+        fun getByLabel(label: Char) = CamelCard.entries.firstOrNull { it.label == label }
     }
 }
