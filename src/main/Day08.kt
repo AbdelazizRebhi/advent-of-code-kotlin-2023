@@ -1,8 +1,6 @@
 package main
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
@@ -50,9 +48,7 @@ suspend inline fun Network.countStepsUntil(
 
 fun List<Instruction>.generateRepeating(): Flow<Instruction> = flow {
     while (true) {
-        forEach {
-            emit(it)
-        }
+        emitAll(asFlow())
     }
 }
 
