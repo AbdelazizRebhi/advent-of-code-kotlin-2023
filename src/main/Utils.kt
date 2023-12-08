@@ -27,5 +27,17 @@ fun Any?.println() = println(this)
 
 suspend fun <A, B> Iterable<A>.parallelMap(transform: suspend (A) -> B): List<B> =
     coroutineScope {
-        map { async { transform(it) } }.awaitAll()
+        map {
+            async {
+                transform(it)
+            }
+        }.awaitAll()
     }
+
+tailrec fun gcd(x: Long, y: Long): Long {
+    return if (y == 0L) x else gcd(y, x % y)
+}
+
+fun lcm(a: Long, b: Long): Long {
+    return if (a == 0L || b == 0L) 0L else (a * b) / gcd(a, b)
+}
