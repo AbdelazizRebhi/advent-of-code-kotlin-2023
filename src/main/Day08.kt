@@ -1,6 +1,5 @@
 package main
 
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
@@ -10,7 +9,7 @@ fun main() = runBlocking {
     )
 
     val instructions = input[0].map { Instruction(it) }
-    val network = input.subList(2, input.size).toNetwork()
+    val network = input.drop(2).toNetwork()
 
     val part1 = network.countStepsToZZZ("AAA", instructions)
     part1.println()
@@ -22,34 +21,24 @@ fun main() = runBlocking {
     part2.println()
 }
 
-suspend fun Network.countStepsToZZZ(start: String, instructions: List<Instruction>): Long =
+fun Network.countStepsToZZZ(start: String, instructions: List<Instruction>): Long =
     countStepsUntil(start, instructions) { current -> current != "ZZZ"}
 
-suspend fun Network.countStepsToGhostZ(ghost: String, instructions: List<Instruction>): Long =
+fun Network.countStepsToGhostZ(ghost: String, instructions: List<Instruction>): Long =
     countStepsUntil(ghost, instructions) { current -> !current.endsWith("Z") }
 
-suspend inline fun Network.countStepsUntil(
+inline fun Network.countStepsUntil(
     start: String,
     instructions: List<Instruction>,
     crossinline condition: (String) -> Boolean
 ): Long {
     var current = start
     var stepCount = 0L
-
-    instructions.generateRepeating()
-        .takeWhile { condition(current) }
-        .collect {
-            current = navigateFrom(current, it)
-            stepCount++
-        }
-
-    return stepCount
-}
-
-fun List<Instruction>.generateRepeating(): Flow<Instruction> = flow {
-    while (true) {
-        emitAll(asFlow())
+    while (condition(current)) {
+        val index = (stepCount++ % instructions.size).toInt()
+        current = navigateFrom(current, instructions[index])
     }
+    return stepCount
 }
 
 data class Network(val nodes: Map<String, Pair<String, String>>) {
