@@ -6,39 +6,31 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
-
     val input = readInput(
         "Day08"
 //        "Day08_test"
     )
 
     val instructions = input[0].map { Instruction(it) }
-    instructions.println()
-
     val network = input.subList(2, input.size).toNetwork()
 
-
     val part1 = network.countStepsToZZZ("AAA", instructions)
-
     part1.println()
 
-    val ghosts = network.ghosts
-
-    val part2 = ghosts.parallelMap { ghost ->
+    val part2 = network.ghosts.parallelMap { ghost ->
         network.countStepsToGhostZ(ghost, instructions)
     }.fold(1L) { acc, l -> lcm(acc, l) }
 
     part2.println()
-
 }
 
 suspend fun Network.countStepsToZZZ(start: String, instructions: List<Instruction>): Long =
-    generateRepeatingSteps(start, instructions) { current -> current != "ZZZ"}
+    countStepsUntil(start, instructions) { current -> current != "ZZZ"}
 
 suspend fun Network.countStepsToGhostZ(ghost: String, instructions: List<Instruction>): Long =
-    generateRepeatingSteps(ghost, instructions) { current -> !current.endsWith("Z") }
+    countStepsUntil(ghost, instructions) { current -> !current.endsWith("Z") }
 
-suspend inline fun Network.generateRepeatingSteps(
+suspend inline fun Network.countStepsUntil(
     start: String,
     instructions: List<Instruction>,
     crossinline condition: (String) -> Boolean
@@ -82,12 +74,3 @@ fun Network.navigateFrom(start: String, instruction: Instruction): String =
         } else {
             nodes[start]!!.second
         }
-
-
-
-
-
-
-
-
-
