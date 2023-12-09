@@ -22,10 +22,10 @@ fun main() = runBlocking {
 }
 
 fun Network.countStepsToZZZ(start: String, instructions: List<Instruction>): Long =
-    countStepsUntil(start, instructions) { current -> current != "ZZZ"}
+    countStepsUntil(start, instructions) { it != "ZZZ"}
 
 fun Network.countStepsToGhostZ(ghost: String, instructions: List<Instruction>): Long =
-    countStepsUntil(ghost, instructions) { current -> !current.endsWith("Z") }
+    countStepsUntil(ghost, instructions) { !it.endsWith("Z") }
 
 inline fun Network.countStepsUntil(
     start: String,
