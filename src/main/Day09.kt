@@ -38,7 +38,7 @@ tailrec fun List<Long>.extrapolateBackwards(acc: Long = 0, ops: Int = 0): Long {
 }
 
 fun List<Long>.getDifferences(): List<Long> {
-    return (1 until size).map { this[it] - this[it - 1] }
+    return windowed(2) { (a, b) -> b - a}
 }
 
 data class Report(val histories: List<History>)
