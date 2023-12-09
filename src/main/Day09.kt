@@ -2,7 +2,7 @@ package main
 
 import kotlin.math.pow
 
-suspend fun main() {
+fun main() {
     val input = readInput(
         "Day09"
 //        "Day09_test"
@@ -10,11 +10,11 @@ suspend fun main() {
 
     val report = input.toReport()
 
-    val part1 = report.histories.parallelMap { it.values.extrapolate() }.sum()
+    val part1 = report.histories.sumOf { it.values.extrapolate() }
     part1.println()
 
-    val part2 = report.histories.parallelMap { it.values.reversed().extrapolate() }.sum()
-//    val part2 = report.histories.parallelMap { it.values.extrapolateBackwards() }.sum()
+    val part2 = report.histories.sumOf { it.values.reversed().extrapolate() }
+//    val part2 = report.histories.sumOf { it.values.extrapolateBackwards() }
     part2.println()
 
 }
@@ -43,7 +43,7 @@ fun List<Long>.getDifferences(): List<Long> {
 
 data class Report(val histories: List<History>)
 
-suspend fun List<String>.toReport() = Report( parallelMap { it.toHistory() })
+fun List<String>.toReport() = Report( map { it.toHistory() })
 
 data class History(val values: List<Long>)
 
