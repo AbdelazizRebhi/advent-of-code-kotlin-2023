@@ -8,16 +8,47 @@ fun main() {
     )
 
     val hands = input.map { it.toHand() }
-
-    val part12 = hands.getTotalWinnings()
-
-    part12.println()
-
+    hands.getTotalWinnings().println()
 }
+
+const val isJokerInTheHouse = false
 
 fun List<Hand>.getTotalWinnings(): Int = sorted()
     .mapIndexed { index, hand -> hand.bid * (index + 1) }
     .sum()
+
+data class Hand(val camelCards: List<CamelCard>, val bid: Int) : Comparable<Hand> {
+
+    private val handType: HandType by lazy {
+        val clusters = camelCards.groupingBy { it }
+            .eachCount()
+            .toMutableMap()
+
+        if (isJokerInTheHouse) {
+            applyJokerRule(clusters)
+        }
+
+        val maxCount = clusters.maxOfOrNull { it.value }!!
+        val pairCount = clusters.count { it.value == 2 }
+
+        when (maxCount) {
+            1 -> HandType.HIGH_CARD
+            2 -> if (pairCount == 2) HandType.TWO_PAIR else HandType.ONE_PAIR
+            3 -> if (pairCount == 1) HandType.FULL_HOUSE else HandType.THREE_OF_A_KIND
+            4 -> HandType.FOUR_OF_A_KIND
+            else -> HandType.FIVE_OF_A_KIND
+        }
+    }
+
+    override fun compareTo(other: Hand): Int =
+        if (this.handType == other.handType) {
+            this.camelCards.zip(other.camelCards) { thisCard, otherCard ->
+                thisCard.value.compareTo(otherCard.value)
+            }.firstOrNull { it != 0 } ?: 0
+        } else {
+            other.handType.compareTo(this.handType)
+        }
+}
 
 private fun applyJokerRule(clusters: MutableMap<CamelCard, Int>) {
     val joker = CamelCard.entries.first()
@@ -44,40 +75,8 @@ fun String.toHand() = Hand(
     substringAfter(" ").trim().toInt()
 )
 
-data class Hand(val camelCards: List<CamelCard>, val bid: Int) : Comparable<Hand> {
-
-    private val handType: HandType by lazy {
-        val clusters = camelCards.groupingBy { it }
-            .eachCount()
-            .toMutableMap()
-
-        // comment this for part 1
-        applyJokerRule(clusters)
-
-        val maxCount = clusters.maxOfOrNull { it.value }!!
-        val pairCount = clusters.count { it.value == 2 }
-
-        when (maxCount) {
-            1 -> HandType.HIGH_CARD
-            2 -> if (pairCount == 2) HandType.TWO_PAIR else HandType.ONE_PAIR
-            3 -> if (pairCount == 1) HandType.FULL_HOUSE else HandType.THREE_OF_A_KIND
-            4 -> HandType.FOUR_OF_A_KIND
-            else -> HandType.FIVE_OF_A_KIND
-        }
-    }
-
-    override fun compareTo(other: Hand): Int =
-        if (this.handType == other.handType) {
-            this.camelCards.zip(other.camelCards) { thisCard, otherCard ->
-                thisCard.value.compareTo(otherCard.value)
-            }.firstOrNull { it != 0 } ?: 0
-        } else {
-            other.handType.compareTo(this.handType)
-        }
-}
-
 enum class CamelCard(val label: Char, val value: Int) {
-    JOKER('J', 1), // comment this for part 1
+    JOKER('J', 1),
     TWO('2', 2),
     THREE('3', 3),
     FOUR('4', 4),
@@ -93,6 +92,11 @@ enum class CamelCard(val label: Char, val value: Int) {
     ACE('A', 14);
 
     companion object {
-        fun getByLabel(label: Char) = CamelCard.entries.firstOrNull { it.label == label }
+        fun getByLabel(label: Char) : CamelCard? {
+            val ignored = if (isJokerInTheHouse) 0 else 1
+            return CamelCard.entries
+                .drop(ignored)
+                .firstOrNull { it.label == label }
+        }
     }
 }

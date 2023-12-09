@@ -2,7 +2,7 @@ package main
 
 import kotlinx.coroutines.runBlocking
 
-fun main() = runBlocking {
+suspend fun main() {
     val input = readInput(
         "Day08"
 //        "Day08_test"

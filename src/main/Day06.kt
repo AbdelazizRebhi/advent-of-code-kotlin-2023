@@ -13,17 +13,16 @@ fun main() {
     // part 1: multiple races
     val times = input[0].toRaceNumberList()
     val recordDistances = input[1].toRaceNumberList()
-    val races = times.zip(recordDistances).map { it.toRace() }
-
-    val part1 = races.map { it.getWinCount() }.reduce(Int::times)
+    val part1 = times.zip(recordDistances)
+        .asSequence()
+        .map { it.toRace().getWinCount() }
+        .reduce(Int::times)
 
     part1.println()
 
     // part 2: one race
     val race = Race(input[0].toSingleRaceNumber(), input[1].toSingleRaceNumber())
-
     val part2 = race.getWinCount()
-
     part2.println()
 }
 
