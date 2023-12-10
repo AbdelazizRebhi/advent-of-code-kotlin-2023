@@ -1,7 +1,5 @@
 package main
 
-import kotlin.math.pow
-
 fun main() {
     val input = readInput(
         "Day09"
@@ -31,7 +29,7 @@ tailrec fun List<Long>.extrapolate(acc: Long = 0): Long {
 tailrec fun List<Long>.extrapolateBackwards(acc: Long = 0, ops: Int = 0): Long {
     val differences = getDifferences()
     return if (differences.all { it == 0L }) {
-        (first() - acc) * (-1.0).pow(ops).toLong()
+        (first() - acc) * ops.altSign()
     } else {
         differences.extrapolateBackwards(first() - acc, ops + 1)
     }

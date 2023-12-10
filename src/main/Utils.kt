@@ -7,6 +7,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
+import kotlin.math.pow
 
 /**
  * Reads lines from the given input txt file.
@@ -41,3 +42,5 @@ tailrec fun gcd(x: Long, y: Long): Long {
 fun lcm(a: Long, b: Long): Long {
     return if (a == 0L || b == 0L) 0L else (a * b) / gcd(a, b)
 }
+
+fun Int.altSign(): Long = (-1.0).pow(this).toLong()
