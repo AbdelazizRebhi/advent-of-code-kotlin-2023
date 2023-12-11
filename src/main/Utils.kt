@@ -44,3 +44,24 @@ fun lcm(a: Long, b: Long): Long {
 }
 
 fun Int.altSign(): Long = (-1.0).pow(this).toLong()
+
+data class Cell(val x: Int, val y: Int) {
+    val neighbors: Set<Cell> by lazy {
+        buildSet {
+            add(Cell(x-1, y))
+            add(Cell(x, y-1))
+            add(Cell(x+1, y))
+            add(Cell(x, y+1))
+        }
+    }
+
+    override fun toString(): String = "($x,$y)"
+}
+
+fun Cell.isRightOf(other: Cell): Boolean = (x == other.x + 1) && (y == other.y)
+
+fun Cell.isLeftOf(other: Cell): Boolean = (x == other.x - 1) && (y == other.y)
+
+fun Cell.isAbove(other: Cell): Boolean = (x == other.x) && (y == other.y - 1)
+
+fun Cell.isBelow(other: Cell): Boolean = (x == other.x) && (y == other.y + 1)

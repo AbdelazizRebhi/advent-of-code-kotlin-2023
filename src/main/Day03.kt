@@ -21,8 +21,6 @@ fun main() {
 
 val XY_RANGE = 1..139
 
-data class Cell(val x: Int, val y: Int)
-
 data class CellRange(val xRange: IntRange, val y: Int) {
     private val adjacentXRange: IntRange
         get() = (xRange.first - 1).coerceAtLeast(XY_RANGE.first())..(xRange.last + 1).coerceAtMost(XY_RANGE.last)
