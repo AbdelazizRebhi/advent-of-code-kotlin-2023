@@ -1,49 +1,73 @@
 package main
 
+import kotlin.math.abs
+
 fun main() {
     val input = readInput(
-//        "Day11"
-        "Day11_test"
+        "Day11"
+//        "Day11_test"
     )
 
-    input.toExpandedUniverse().println()
+    val galaxies = input.toExpandedUniverse().galaxies
 
-
-
+    val part1 = galaxies.getSumOfPaths()
+    part1.println()
 }
+
+fun Set<Galaxy>.getSumOfPaths(): Long {
+    val notVisited = this.toMutableSet()
+    return sumOf { galaxy ->
+        notVisited.remove(galaxy)
+        galaxy.getSumOfPaths(notVisited)
+    }
+}
+
+fun Galaxy.getSumOfPaths(other: Set<Galaxy>) =
+    other.sumOf { getDistanceTo(it) }
 
 fun List<String>.toExpandedUniverse(): Universe {
-    val expandedRows = mutableListOf<List<Char>>()
-    forEach { line ->
-        expandedRows.add(line.toList())
-        if (!line.contains('#')) {
-            expandedRows.add(line.toList())
-        }
-    }
-//    expandedRows.transpose().forEach { it.println() }
+    val expansionFactor = 999999L
+    val expandedRows = this@toExpandedUniverse.getExpandedIndices()
 
-    val expandedCols = mutableListOf<List<Char>>()
-    expandedRows.transpose().forEach { line ->
-        expandedCols.add(line.toList())
-        if (!line.contains('#')) {
-            expandedCols.add(line.toList())
-        }
-    }
-    expandedCols.transpose().forEach { it.println() }
+    val transposed = transpose()
+    val expandedCols = transposed.getExpandedIndices()
 
-    val galaxies = expandedCols.transpose()
-        .flatMapIndexed { y, line ->
-            line.mapIndexed { x, c ->
-                if (c == '#') Galaxy(Cell(x, y)) else null
-            }.filterNotNull()
-        }.toSet()
-    return Universe(galaxies)
+    return Universe( toGalaxies(expansionFactor, expandedRows, expandedCols) )
 }
 
-fun List<List<Char>>.transpose(): List<List<Char>> {
-    return this[0].indices.map { y -> indices.map { x -> this[x][y] } }
+private fun List<String>.toGalaxies(
+    expansionFactor: Long,
+    expandedRows: Set<Int>,
+    expandedCols: Set<Int>
+) = buildSet {
+    this@toGalaxies.forEachIndexed { y, row ->
+        if (row.contains('#')) {
+            val adjustedY = expansionFactor.times(expandedRows.count { it < y }).plus(y)
+            row.forEachIndexed { x, col ->
+                if (col == '#') {
+                    val adjustedX = expansionFactor.times(expandedCols.count { it < x }).plus(x)
+                    add(Galaxy(adjustedX, adjustedY))
+                }
+            }
+        }
+    }
+}
+
+private fun List<String>.getExpandedIndices() = buildSet {
+    this@getExpandedIndices.forEachIndexed { x, col ->
+        if (!col.contains('#')) {
+            add(x)
+        }
+    }
+}
+
+fun List<String>.transpose(): List<String> {
+    return this[0].indices.map { y -> indices.map { x -> this[x][y] }.joinToString("") }
 }
 
 data class Universe(val galaxies: Set<Galaxy>)
 
-data class Galaxy(val cell: Cell)
+data class Galaxy(val x: Long, val y: Long)
+
+fun Galaxy.getDistanceTo(other: Galaxy): Long =
+    abs(x - other.x) + abs(y - other.y)
