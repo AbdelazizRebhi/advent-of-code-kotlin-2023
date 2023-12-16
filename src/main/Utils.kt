@@ -26,6 +26,11 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
  */
 fun Any?.println() = println(this)
 
+/**
+ * Logs a variable/expression with a label
+ */
+fun Any?.logWithLabel(label: String = "") = println("$label: $this")
+
 suspend fun <A, B> Iterable<A>.parallelMap(transform: suspend (A) -> B): List<B> =
     coroutineScope {
         map {
