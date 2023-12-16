@@ -90,23 +90,23 @@ fun Field.buildPath(): Set<Tile> {
         pathTiles.add(pipe1)
         if (!pathTiles.add(pipe2)) return pathTiles
         val nextPipe1 = Pipe.getByChar(pipe1.char)!!
-        direction1 = nextPipe1.directions.first { it != Direction.getOppositeOf(direction1) }
+        direction1 = nextPipe1.directions.first { it != CardinalDirection.getOppositeOf(direction1) }
         val nextPipe2 = Pipe.getByChar(pipe2.char)!!
-        direction2 = nextPipe2.directions.first { it != Direction.getOppositeOf(direction2) }
+        direction2 = nextPipe2.directions.first { it != CardinalDirection.getOppositeOf(direction2) }
     }
 }
 
-private data class Step(val from: Tile, val direction: Direction)
+data class Step(val from: Tile, val cardinalDirection: CardinalDirection)
 
-private fun Field.navigate(step: Step): Tile? {
+fun Field.navigate(step: Step): Tile? {
     val tiles = (pipes union grounds union setOf(start)).associateBy { it.cell }
     val x = step.from.cell.x
     val y = step.from.cell.y
-    return when (step.direction) {
-        Direction.NORTH -> tiles[Cell(x,y-1)]
-        Direction.EAST -> tiles[Cell(x+1,y)]
-        Direction.SOUTH -> tiles[Cell(x,y+1)]
-        Direction.WEST -> tiles[Cell(x-1,y)]
+    return when (step.cardinalDirection) {
+        CardinalDirection.NORTH -> tiles[Cell(x,y-1)]
+        CardinalDirection.EAST -> tiles[Cell(x+1,y)]
+        CardinalDirection.SOUTH -> tiles[Cell(x,y+1)]
+        CardinalDirection.WEST -> tiles[Cell(x-1,y)]
     }
 }
 
@@ -131,11 +131,11 @@ fun List<String>.toField(): Field {
     return Field(start, pipes, grounds)
 }
 
-private enum class Direction {
+enum class CardinalDirection {
     NORTH, EAST, SOUTH, WEST;
 
     companion object {
-        fun getOppositeOf(direction: Direction): Direction = when(direction) {
+        fun getOppositeOf(direction: CardinalDirection): CardinalDirection = when(direction) {
             NORTH -> SOUTH
             EAST -> WEST
             SOUTH -> NORTH
@@ -144,13 +144,13 @@ private enum class Direction {
     }
 }
 
-private enum class Pipe(val char: Char, val directions: Set<Direction>) {
-    VERTICAL('|', setOf(Direction.NORTH , Direction.SOUTH)),
-    HORIZONTAL('-', setOf(Direction.WEST , Direction.EAST)),
-    BEND_NE('L', setOf(Direction.NORTH , Direction.EAST)),
-    BEND_NW('J', setOf(Direction.NORTH , Direction.WEST)),
-    BEND_SE('F', setOf(Direction.SOUTH , Direction.EAST)),
-    BEND_SW('7', setOf(Direction.SOUTH , Direction.WEST));
+enum class Pipe(val char: Char, val directions: Set<CardinalDirection>) {
+    VERTICAL('|', setOf(CardinalDirection.NORTH , CardinalDirection.SOUTH)),
+    HORIZONTAL('-', setOf(CardinalDirection.WEST , CardinalDirection.EAST)),
+    BEND_NE('L', setOf(CardinalDirection.NORTH , CardinalDirection.EAST)),
+    BEND_NW('J', setOf(CardinalDirection.NORTH , CardinalDirection.WEST)),
+    BEND_SE('F', setOf(CardinalDirection.SOUTH , CardinalDirection.EAST)),
+    BEND_SW('7', setOf(CardinalDirection.SOUTH , CardinalDirection.WEST));
 
     companion object {
         fun getByChar(char: Char): Pipe? = Pipe.entries.firstOrNull { it.char == char }
