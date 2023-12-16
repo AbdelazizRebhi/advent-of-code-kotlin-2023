@@ -1,62 +1,51 @@
 package main
 
-import java.lang.IllegalArgumentException
-
 fun main() {
     val input = readInput(
-//        "Day10"
-        "Day10_test"
+        "Day10"
+//        "Day10_test"
     )
 
-
-
     val field = input.toField()
-
     val path = field.buildPath()
 
-
-    val newInput = StringBuilder()
-
-    input.forEachIndexed { lineNumber, line ->
-        line.forEachIndexed { pos, char ->
-            val tile = if (char == 'S') field.start else Tile(char, Cell(pos, lineNumber))
-
-            if (tile in path) {
-                val newChar = when (tile.char) {
-                    'L' -> '╚'
-                    'J' -> '╝'
-                    '7' -> '╗'
-                    'F' -> '╔'
-                    '-' -> '═'
-                    '|' -> '║'
-                    'S' -> 'o'
-                    else -> throw IllegalArgumentException("invalid pipe")
-                }
-                newInput.append(newChar)
-            } else {
-                newInput.append(".")
-            }
-        }
-        newInput.append("\n")
-    }
-
-    newInput.println()
-
-
+//    val newInput = StringBuilder()
+//    input.forEachIndexed { lineNumber, line ->
+//        line.forEachIndexed { pos, char ->
+//            val tile = if (char == 'S') field.start else Tile(char, Cell(pos, lineNumber))
+//
+//            if (tile in path) {
+//                val newChar = when (tile.char) {
+//                    'L' -> '╚'
+//                    'J' -> '╝'
+//                    '7' -> '╗'
+//                    'F' -> '╔'
+//                    '-' -> '═'
+//                    '|' -> '║'
+//                    'S' -> 'o'
+//                    else -> throw IllegalArgumentException("invalid pipe")
+//                }
+//                newInput.append(newChar)
+//            } else {
+//                newInput.append(".")
+//            }
+//        }
+//        newInput.append("\n")
+//    }
+//    newInput.println()
 
     val part1 = path.size / 2
     part1.println()
 
-    val part2 = field.buildEnclosed(path).size
+    val part2 = path.buildEnclosed().size
     part2.println()
-
 }
 
 
 
-fun Field.buildEnclosed(path: Set<Tile>): Set<Cell> {
-    val verticalEdges = path.filterNot { it.char == '-' || it.char == '7' || it.char == 'F' }
-    val pathCells = path.map { it.cell }.toSet()
+fun Set<Tile>.buildEnclosed(): Set<Cell> {
+    val verticalEdges = filterNot { it.char == '-' || it.char == '7' || it.char == 'F' }
+    val pathCells = map { it.cell }.toSet()
     val xMax = pathCells.maxOfOrNull { it.x }!!
     val xMin = pathCells.minOfOrNull { it.x }!!
     val yMax = pathCells.maxOfOrNull { it.y }!!
@@ -107,9 +96,9 @@ fun Field.buildPath(): Set<Tile> {
     }
 }
 
-data class Step(val from: Tile, val direction: Direction)
+private data class Step(val from: Tile, val direction: Direction)
 
-fun Field.navigate(step: Step): Tile? {
+private fun Field.navigate(step: Step): Tile? {
     val tiles = (pipes union grounds union setOf(start)).associateBy { it.cell }
     val x = step.from.cell.x
     val y = step.from.cell.y
@@ -142,7 +131,7 @@ fun List<String>.toField(): Field {
     return Field(start, pipes, grounds)
 }
 
-enum class Direction {
+private enum class Direction {
     NORTH, EAST, SOUTH, WEST;
 
     companion object {
@@ -155,7 +144,7 @@ enum class Direction {
     }
 }
 
-enum class Pipe(val char: Char, val directions: Set<Direction>) {
+private enum class Pipe(val char: Char, val directions: Set<Direction>) {
     VERTICAL('|', setOf(Direction.NORTH , Direction.SOUTH)),
     HORIZONTAL('-', setOf(Direction.WEST , Direction.EAST)),
     BEND_NE('L', setOf(Direction.NORTH , Direction.EAST)),
