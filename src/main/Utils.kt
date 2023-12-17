@@ -7,6 +7,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
+import kotlin.math.abs
 import kotlin.math.pow
 
 /**
@@ -48,25 +49,30 @@ fun lcm(a: Long, b: Long): Long {
     return if (a == 0L || b == 0L) 0L else (a * b) / gcd(a, b)
 }
 
-fun Int.altSign(): Long = (-1.0).pow(this).toLong()
+fun Int.paritySign(): Int = (-1.0).pow(this).toInt()
 
 data class Cell(val x: Int, val y: Int) {
     val neighbors: Set<Cell> by lazy {
-        buildSet {
-            add(Cell(x-1, y))
-            add(Cell(x, y-1))
-            add(Cell(x+1, y))
-            add(Cell(x, y+1))
-        }
+        Direction.entries.map { move(it) }.toSet()
     }
 
     override fun toString(): String = "($x,$y)"
 }
 
-fun Cell.isRightOf(other: Cell): Boolean = (x == other.x + 1) && (y == other.y)
+enum class Direction { UP, RIGHT, DOWN, LEFT }
 
-fun Cell.isLeftOf(other: Cell): Boolean = (x == other.x - 1) && (y == other.y)
+fun Cell.move(direction: Direction): Cell = when(direction) {
+    Direction.UP -> Cell(x, y - 1)
+    Direction.RIGHT -> Cell(x + 1, y)
+    Direction.DOWN -> Cell(x, y + 1)
+    Direction.LEFT -> Cell(x - 1, y)
+}
 
-fun Cell.isAbove(other: Cell): Boolean = (x == other.x) && (y == other.y - 1)
+fun Cell.isRightOf(other: Cell) = (other == move(Direction.LEFT))
+fun Cell.isLeftOf(other: Cell) = (other == move(Direction.RIGHT))
+fun Cell.isAbove(other: Cell) = (other == move(Direction.DOWN))
+fun Cell.isBelow(other: Cell) = (other == move(Direction.UP))
 
-fun Cell.isBelow(other: Cell): Boolean = (x == other.x) && (y == other.y + 1)
+fun Cell.manhattanDistanceTo(other: Cell): Int =
+    abs(x - other.x) + abs(y - other.y)
+
